@@ -5,3 +5,4 @@ moviepy
 gtts
 Pillow
 requests
+huggingface_hub
