@@ -1,21 +1,45 @@
 import streamlit as st
+from utils.editor import VideoEditor
 
 st.set_page_config(
-    page_title="AI Video Cloner",
+    page_title="AI Social Media Video Creator",
     page_icon="🎬",
     layout="wide"
 )
 
-st.title("🎬 AI Social Media Video Cloner")
-st.write("वीडियो का लिंक पेस्ट करें और AI नया ओरिजिनल वीडियो बनाने में मदद करेगा।")
+st.title("🎬 AI Social Media Video Creator")
+st.write("किसी विषय पर नया, मौलिक वीडियो बनाने के लिए विषय लिखें।")
 
-video_url = st.text_input(
-    "YouTube / Instagram / Facebook Video URL"
-)
+topic = st.text_input("Video Topic")
 
-if st.button("Analyze Video"):
-    if video_url:
-        st.success("✅ Video URL प्राप्त हो गया।")
-        st.write("URL:", video_url)
-    else:
-        st.error("❌ पहले वीडियो का लिंक डालें।")
+if st.button("Generate Video"):
+
+    if topic.strip() == "":
+        st.warning("Please enter a topic.")
+        st.stop()
+
+    editor = VideoEditor()
+
+    with st.spinner("Generating Script..."):
+        result = editor.create_video(topic)
+
+    st.success("Video Generated Successfully")
+
+    st.subheader("Script")
+    st.write(result["script"])
+
+    st.subheader("Audio")
+    st.audio(result["audio"])
+
+    st.subheader("Final Video")
+
+    with open(result["video"], "rb") as f:
+        st.video(f.read())
+
+    with open(result["video"], "rb") as f:
+        st.download_button(
+            "Download Video",
+            data=f,
+            file_name="final_video.mp4",
+            mime="video/mp4"
+        )
