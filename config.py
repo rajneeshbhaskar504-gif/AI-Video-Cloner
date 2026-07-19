@@ -1,20 +1,27 @@
 import os
+from dotenv import load_dotenv
 
-# App
-APP_NAME = "AI Social Media Video Cloner"
-VERSION = "1.0.0"
+load_dotenv()
 
-# Folder Paths
+APP_NAME = "AI Social Media Video Creator"
+VERSION = "2.0"
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
-OUTPUT_FOLDER = os.path.join(BASE_DIR, "outputs")
-TEMP_FOLDER = os.path.join(BASE_DIR, "temp")
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+OUTPUT_DIR = os.path.join(BASE_DIR, "outputs")
+IMAGE_DIR = os.path.join(OUTPUT_DIR, "images")
+AUDIO_DIR = os.path.join(OUTPUT_DIR, "audio")
+VIDEO_DIR = os.path.join(OUTPUT_DIR, "videos")
 
-# Create folders automatically
-for folder in [UPLOAD_FOLDER, OUTPUT_FOLDER, TEMP_FOLDER]:
+for folder in [
+    UPLOAD_DIR,
+    OUTPUT_DIR,
+    IMAGE_DIR,
+    AUDIO_DIR,
+    VIDEO_DIR
+]:
     os.makedirs(folder, exist_ok=True)
 
-# API Keys (from environment variables)
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN")
