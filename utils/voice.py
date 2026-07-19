@@ -1,27 +1,43 @@
 
 import os
 from gtts import gTTS
+from config import AUDIO_DIR
+
 
 class VoiceEngine:
 
-    def __init__(self, language="hi"):
-        self.language = language
+    def __init__(self):
+        os.makedirs(AUDIO_DIR, exist_ok=True)
 
-    def generate(self, text, output_path):
-        if not text.strip():
-            raise ValueError("Text is empty.")
+    def generate(
+        self,
+        script,
+        filename="voice.mp3",
+        language="hi"
+    ):
 
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        if not script.strip():
+            raise Exception("Script is empty.")
 
-        tts = gTTS(
-            text=text,
-            lang=self.language,
+        output = os.path.join(
+            AUDIO_DIR,
+            filename
+        )
+
+        voice = gTTS(
+            text=script,
+            lang=language,
             slow=False
         )
 
-        tts.save(output_path)
+        voice.save(output)
 
-        return output_path
+        return output
 
-    def preview(self, text):
-        return text[:100] + "..." if len(text) > 100 else text
+    def supported_languages(self):
+
+        return {
+            "Hindi": "hi",
+            "English": "en",
+            "Urdu": "ur"
+        }
