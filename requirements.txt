@@ -6,3 +6,4 @@ gtts
 Pillow
 requests
 huggingface_hub
+python-dotenv
