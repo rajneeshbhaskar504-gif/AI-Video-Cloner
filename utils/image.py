@@ -1,36 +1,47 @@
-
 import os
+import requests
 
 class ImageEngine:
 
     def __init__(self):
-        pass
+        self.api_token = os.getenv("HUGGINGFACE_API_TOKEN")
 
-    def generate(self, prompt, output_folder="outputs/images"):
+        self.api_url = (
+            "https://router.huggingface.co/hf-inference/models/"
+            "black-forest-labs/FLUX.1-schnell"
+        )
 
-        if not prompt.strip():
-            raise ValueError("Prompt is empty.")
+        self.headers = {
+            "Authorization": f"Bearer {self.api_token}"
+        }
+
+    def generate(
+        self,
+        prompt,
+        output_folder="outputs/images",
+        filename="image.png"
+    ):
 
         os.makedirs(output_folder, exist_ok=True)
 
-        filename = "scene_001.txt"
-        output_file = os.path.join(output_folder, filename)
+        response = requests.post(
+            self.api_url,
+            headers=self.headers,
+            json={
+                "inputs": prompt
+            },
+            timeout=300
+        )
 
-        with open(output_file, "w", encoding="utf-8") as f:
-            f.write("Image Prompt:\n\n")
-            f.write(prompt)
+        if response.status_code != 200:
+            raise Exception(response.text)
 
-        return {
-            "status": True,
-            "prompt": prompt,
-            "output": output_file
-        }
+        output_path = os.path.join(
+            output_folder,
+            filename
+        )
 
-    def multiple(self, prompts, output_folder="outputs/images"):
+        with open(output_path, "wb") as f:
+            f.write(response.content)
 
-        results = []
-
-        for prompt in prompts:
-            results.append(self.generate(prompt, output_folder))
-
-        return results
+        return output_path
