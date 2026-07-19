@@ -1,7 +1,7 @@
 
 from utils.ai import AIEngine
-from utils.voice import VoiceEngine
 from utils.image import ImageEngine
+from utils.voice import VoiceEngine
 from utils.video import VideoEngine
 
 
@@ -10,76 +10,55 @@ class VideoEditor:
     def __init__(self):
 
         self.ai = AIEngine()
-        self.voice = VoiceEngine()
         self.image = ImageEngine()
+        self.voice = VoiceEngine()
         self.video = VideoEngine()
 
-    def create_script(self, topic):
+    def create_video(
+        self,
+        topic,
+        language="Hindi",
+        duration=5
+    ):
 
-        prompt = f"""
-        Write a professional Hindi video script.
-
-        Topic:
-        {topic}
-
-        Make it engaging.
-        """
-
-        return self.ai.generate(prompt)
-
-    def create_scene_prompts(self, script):
-
-        prompt = f"""
-        Divide this script into scenes.
-
-        For every scene create one cinematic AI image prompt.
-
-        Script:
-
-        {script}
-        """
-
-        data = self.ai.generate(prompt)
-
-        return data.split("\n")
-
-    def create_voice(self, script):
-
-        return self.voice.generate(
-            script,
-            "outputs/audio.mp3"
+        # 1. Generate Script
+        script = self.ai.generate_script(
+            topic,
+            language,
+            duration
         )
 
-    def create_images(self, prompts):
+        # 2. Generate Scene Prompts
+        prompts = self.ai.generate_scene_prompts(
+            script
+        )
 
-        images = []
+        # 3. Generate Images
+        images = self.image.generate_multiple(
+            prompts
+        )
 
-        for prompt in prompts:
+        # 4. Generate Voice
+        lang = "hi"
 
-            result = self.image.generate(prompt)
+        if language == "English":
+            lang = "en"
 
-            images.append(result["output"])
+        audio = self.voice.generate(
+            script,
+            language=lang
+        )
 
-        return images
-
-    def create_video(self, topic):
-
-        script = self.create_script(topic)
-
-        prompts = self.create_scene_prompts(script)
-
-        audio = self.create_voice(script)
-
-        images = self.create_images(prompts)
-
-        final_video = self.video.create_video(
+        # 5. Create Final Video
+        video = self.video.create(
             images,
             audio
         )
 
         return {
             "script": script,
-            "audio": audio,
+            "prompts": prompts,
             "images": images,
-            "video": final_video
+            "audio": audio,
+            "video": video
         }
