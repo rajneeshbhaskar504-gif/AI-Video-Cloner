@@ -1,10 +1,14 @@
+
 import os
 import requests
+from config import IMAGE_DIR, HUGGINGFACE_API_TOKEN
 
 class ImageEngine:
 
     def __init__(self):
-        self.api_token = os.getenv("HUGGINGFACE_API_TOKEN")
+
+        if not HUGGINGFACE_API_TOKEN:
+            raise Exception("HUGGINGFACE_API_TOKEN not found.")
 
         self.api_url = (
             "https://router.huggingface.co/hf-inference/models/"
@@ -12,36 +16,51 @@ class ImageEngine:
         )
 
         self.headers = {
-            "Authorization": f"Bearer {self.api_token}"
+            "Authorization": f"Bearer {HUGGINGFACE_API_TOKEN}",
+            "Content-Type": "application/json"
         }
 
-    def generate(
-        self,
-        prompt,
-        output_folder="outputs/images",
-        filename="image.png"
-    ):
+    def generate(self, prompt, filename):
 
-        os.makedirs(output_folder, exist_ok=True)
+        payload = {
+            "inputs": prompt
+        }
 
         response = requests.post(
             self.api_url,
             headers=self.headers,
-            json={
-                "inputs": prompt
-            },
+            json=payload,
             timeout=300
         )
 
         if response.status_code != 200:
             raise Exception(response.text)
 
-        output_path = os.path.join(
-            output_folder,
+        os.makedirs(IMAGE_DIR, exist_ok=True)
+
+        output = os.path.join(
+            IMAGE_DIR,
             filename
         )
 
-        with open(output_path, "wb") as f:
+        with open(output, "wb") as f:
             f.write(response.content)
 
-        return output_path
+        return output
+
+    def generate_multiple(self, prompts):
+
+        images = []
+
+        for index, prompt in enumerate(prompts):
+
+            filename = f"scene_{index+1}.png"
+
+            image = self.generate(
+                prompt,
+                filename
+            )
+
+            images.append(image)
+
+        return images
