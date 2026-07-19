@@ -5,25 +5,27 @@ from moviepy import (
     AudioFileClip,
     concatenate_videoclips
 )
+from config import VIDEO_DIR
 
 
 class VideoEngine:
 
-    def __init__(self, fps=24):
-        self.fps = fps
+    def __init__(self):
+        os.makedirs(VIDEO_DIR, exist_ok=True)
 
-    def create_video(
+    def create(
         self,
         image_files,
         audio_file,
-        output_file="outputs/final_video.mp4"
+        filename="final_video.mp4",
+        fps=30
     ):
 
-        if not image_files:
-            raise ValueError("No images found.")
+        if len(image_files) == 0:
+            raise Exception("No Images Found.")
 
         if not os.path.exists(audio_file):
-            raise FileNotFoundError(audio_file)
+            raise Exception("Audio File Missing.")
 
         audio = AudioFileClip(audio_file)
 
@@ -33,9 +35,6 @@ class VideoEngine:
 
         for image in image_files:
 
-            if not os.path.exists(image):
-                continue
-
             clip = (
                 ImageClip(image)
                 .with_duration(duration)
@@ -43,29 +42,26 @@ class VideoEngine:
 
             clips.append(clip)
 
-        if not clips:
-            raise ValueError("No valid image clips.")
-
-        final_video = concatenate_videoclips(
+        video = concatenate_videoclips(
             clips,
             method="compose"
         )
 
-        final_video = final_video.with_audio(audio)
+        video = video.with_audio(audio)
 
-        os.makedirs(
-            os.path.dirname(output_file),
-            exist_ok=True
+        output = os.path.join(
+            VIDEO_DIR,
+            filename
         )
 
-        final_video.write_videofile(
-            output_file,
-            fps=self.fps,
+        video.write_videofile(
+            output,
+            fps=fps,
             codec="libx264",
             audio_codec="aac"
         )
 
         audio.close()
-        final_video.close()
+        video.close()
 
-        return output_file
+        return output
